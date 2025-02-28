@@ -716,54 +716,42 @@ startAutoScroll();
 </head>
 <body>
 <div class="comment-section">
-  <header class="comment-header">
-    <h2>Tinggalkan Komentar</h2>
-  </header>
+  <h2>Tinggalkan Komentar</h2>
   <form id="commentForm">
-    <label for="nama">Nama</label>
-    <input type="text" id="nama" name="nama" placeholder="Nama Anda" required>
-    
-    <label for="komentar">Komentar</label>
-    <textarea id="komentar" name="komentar" rows="3" placeholder="Komentar Anda" required></textarea>
-    
+    <input type="text" name="nama" placeholder="Nama Anda" required>
+    <textarea name="komentar" placeholder="Tulis Komentar Anda" required></textarea>
     <button type="submit">Kirim Komentar</button>
   </form>
-  <div class="comment-list" id="commentList">
-    <h3>Komentar Terbaru</h3>
-  </div>
+  <div class="comment-list" id="commentList"></div>
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const commentList = document.getElementById("commentList");
-    const savedComments = JSON.parse(localStorage.getItem("comments")) || [];
-    
-    function renderComments() {
-      commentList.innerHTML = "<h3>Komentar Terbaru</h3>";
-      savedComments.forEach(comment => {
-        const commentDiv = document.createElement("div");
-        commentDiv.classList.add("comment");
-        commentDiv.innerHTML = `<strong>${comment.nama}</strong><p>${comment.komentar}</p>`;
-        commentList.appendChild(commentDiv);
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("komentar.json")
+      .then(response => response.json())
+      .then(data => {
+        const commentList = document.getElementById("commentList");
+        data.forEach(comment => {
+          const div = document.createElement("div");
+          div.classList.add("comment");
+          div.innerHTML = `<strong>${comment.nama}</strong><p>${comment.komentar}</p>`;
+          commentList.appendChild(div);
+        });
       });
-    }
 
-    document.getElementById("commentForm").onsubmit = function(event) {
-      event.preventDefault();
-      const nama = document.getElementById("nama").value;
-      const komentar = document.getElementById("komentar").value;
-      
-      if (nama && komentar) {
-        const newComment = { nama, komentar };
-        savedComments.push(newComment);
-        localStorage.setItem("comments", JSON.stringify(savedComments));
-        renderComments();
-        document.getElementById("commentForm").reset();
-      }
+    document.getElementById("commentForm").onsubmit = function (e) {
+      e.preventDefault();
+      const nama = e.target.nama.value;
+      const komentar = e.target.komentar.value;
+
+      fetch("simpan.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama, komentar })
+      }).then(response => response.json()).then(() => location.reload());
     };
-
-    renderComments();
   });
 </script>
+
 </body>
 </html>
